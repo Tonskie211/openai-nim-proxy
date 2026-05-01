@@ -21,21 +21,41 @@ const SHOW_REASONING = process.env.SHOW_REASONING === 'true' || false;
 // 🔥 THINKING MODE TOGGLE - Enables thinking for specific models that support it
 const ENABLE_THINKING_MODE = process.env.ENABLE_THINKING_MODE === 'true' || false;
 
-// Model mapping (adjust based on available NIM models)
+// Model mapping — verified against build.nvidia.com/models (May 2025)
 const MODEL_MAPPING = {
-  'gpt-3.5-turbo': 'nvidia/llama-3.1-nemotron-ultra-253b-v1',
-  'gpt-4': 'deepseek-ai/deepseek-v3.2',
-  'gpt-4-faster': 'qwen/qwen3-next-80b-a3b-thinking',
-  'gpt-4o': 'deepseek-ai/deepseek-v3.1',
-  'claude-3-opus': 'openai/gpt-oss-120b',
-  'claude-3-sonnet': 'openai/gpt-oss-20b',
-  'gemini-pro': 'deepseek-ai/deepseek-chat',
-  // Alternative DeepSeek models to try
-  'deepseek-chat': 'deepseek-ai/deepseek-chat',
-  'deepseek-v3': 'deepseek-ai/deepseek-v3',
-  'deepseek-terminus': 'deepseek-ai/deepseek-v3.1-terminus'
-};
 
+  // --- DeepSeek (confirmed live on NIM) ---
+  'deepseek-v4-pro':   'deepseek-ai/deepseek-v4-pro',    // 1M ctx, flagship MoE
+  'deepseek-v4-flash': 'deepseek-ai/deepseek-v4-flash',  // 1M ctx, fast 284B MoE
+  'gpt-4':             'deepseek-ai/deepseek-v4-pro',
+  'gpt-4o':            'deepseek-ai/deepseek-v4-flash',
+
+  // --- NVIDIA Nemotron ---
+  'gpt-3.5-turbo':  'nvidia/llama-3.1-nemotron-ultra-253b-v1',
+  'gpt-4o-mini':    'nvidia/nemotron-3-super-120b-a12b',   // Hybrid Mamba-Transformer, 1M ctx
+
+  // --- Qwen ---
+  'gpt-4-faster':  'qwen/qwen3.5-122b-a10b',   // 122B MoE, 10B active, fast
+
+  // --- Mistral (free endpoints) ---
+  'mistral-medium':  'mistralai/mistral-medium-3.5-128b',   // Newest, free endpoint
+  'mistral-small':   'mistralai/mistral-small-4-119b-2603', // Hybrid MoE, 256k ctx
+  'gemini-pro':      'mistralai/mistral-medium-3.5-128b',   // Remapped from deprecated deepseek-chat
+
+  // --- GLM (Z.ai, free endpoint) ---
+  'glm-fast':   'z-ai/glm-4.7',   // Free endpoint, multilingual, tool use
+  'glm-pro':    'z-ai/glm-5.1',   // Agentic, long-horizon reasoning
+
+  // --- MiniMax (free endpoint) ---
+  'minimax':    'minimaxai/minimax-m2.7',   // 230B, coding + reasoning, free
+
+  // --- Google ---
+  'gemma':      'google/gemma-4-31b-it',   // Dense 31B, coding + agentic
+
+  // --- OpenAI OSS (via NIM) ---
+  'claude-3-opus':   'openai/gpt-oss-120b',
+  'claude-3-sonnet': 'openai/gpt-oss-20b',
+};
 // Health check endpoint
 app.get('/health', (req, res) => {
   res.json({ 
@@ -117,12 +137,12 @@ app.post('/v1/chat/completions', async (req, res) => {
       if (!nimModel) {
         const modelLower = model.toLowerCase();
         if (modelLower.includes('gpt-4') || modelLower.includes('claude-opus') || modelLower.includes('405b')) {
-          nimModel = 'meta/llama-3.1-405b-instruct';
-        } else if (modelLower.includes('claude') || modelLower.includes('gemini') || modelLower.includes('70b')) {
-          nimModel = 'meta/llama-3.1-70b-instruct';
-        } else {
-          nimModel = 'meta/llama-3.1-8b-instruct';
-        }
+  nimModel = 'deepseek-ai/deepseek-v4-pro';
+} else if (modelLower.includes('claude') || modelLower.includes('gemini') || modelLower.includes('70b')) {
+  nimModel = 'deepseek-ai/deepseek-v4-flash';
+} else {
+  nimModel = 'mistralai/mistral-medium-3.5-128b';  // Free endpoint as default
+}
       }
     }
     
