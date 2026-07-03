@@ -44,7 +44,7 @@ const MODEL_MAPPING = {
 
   // --- GLM (Z.ai, free endpoint) ---
   'glm-fast':   'z-ai/glm-4.7',   // Free endpoint, multilingual, tool use
-  'glm-pro':    'z-ai/glm-5.1',   // Agentic, long-horizon reasoning
+  'glm-pro':    'z-ai/glm-5.2',   // Agentic, long-horizon reasoning
 
   // --- MiniMax (free endpoint) ---
   'minimax':    'minimaxai/minimax-m2.7',   // 230B, coding + reasoning, free
